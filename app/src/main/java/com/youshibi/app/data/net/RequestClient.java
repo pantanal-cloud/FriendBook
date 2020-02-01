@@ -1,16 +1,25 @@
 package com.youshibi.app.data.net;
 
 
+import android.util.Log;
+
+import com.google.gson.Gson;
 import com.youshibi.app.BuildConfig;
 import com.youshibi.app.data.net.converter.GsonConverterFactory;
 import com.youshibi.app.data.net.converter.NullOnEmptyConverterFactory;
 import com.youshibi.app.data.net.interceptor.HeaderInterceptor;
 import com.youshibi.app.data.net.interceptor.LoggingInterceptor;
+import com.youshibi.app.util.OkHttp3Util;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.OkHttpClient;
+import okhttp3.Response;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
 
@@ -19,7 +28,7 @@ import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory;
  */
 public class RequestClient {
 
-
+    public static String token = "";
     private static volatile ServerAPI sServerAPI;//单例模式
 
     public static ServerAPI getServerAPI() {
@@ -29,6 +38,32 @@ public class RequestClient {
                     OkHttpClient.Builder clientBuilder = getClientBuilder();
                     HashMap<String, String> headerMap = new HashMap<>();
                     headerMap.put("appver", String.valueOf(BuildConfig.VERSION_CODE));
+                    Map<String, String> paramMap = new HashMap<>();
+                    paramMap.put("wechatOpenId", "_guest_");
+
+                    OkHttp3Util.doPost(ServerAPI.BASE_URL + "/v1/login", paramMap, new Callback() {
+                        @Override
+                        public void onFailure(Call call, IOException e) {
+
+                        }
+
+                        @Override
+                        public void onResponse(Call call, Response response) throws IOException {
+                            String result = response.body().string();
+                            Gson gson = new Gson();
+                            Map map = gson.fromJson(result, Map.class);
+                            Map dataMap = (Map) map.get("data");
+                            token = dataMap.get("token").toString();
+                        }
+                    });
+
+                    // 等待返回结果
+                    try {
+                        Thread.sleep(5000);
+                    } catch (Exception e) {
+                        Log.e("RequestClient", "sleep error", e);
+                    }
+                    headerMap.put("X-Token", token);
                     clientBuilder.addInterceptor(new HeaderInterceptor(headerMap));
                     //配置日志拦截器
                     if (BuildConfig.DEBUG) {
