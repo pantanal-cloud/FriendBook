@@ -10,7 +10,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.youshibi.app.AppRouter;
@@ -54,9 +53,6 @@ public class BookDetailActivity extends MvpLoaderActivity<BookDetailContract.Pre
     private TextView tvCreateDateCopyright;
 
 
-
-
-
     public static Intent newIntent(Context context, Book book) {
         Intent intent = new Intent(context, BookDetailActivity.class);
         intent.putExtra(K_EXTRA_BOOK, (Parcelable) book);
@@ -86,7 +82,7 @@ public class BookDetailActivity extends MvpLoaderActivity<BookDetailContract.Pre
 
 //        Context context = ;
 //        Toast.makeText(context);
-        bindOnClickLister(this, R.id.fl_add_bookcase,R.id.fl_download_book, R.id.fl_open_book, R.id.ll_book_detail_catalog);
+        bindOnClickLister(this, R.id.fl_add_bookcase, R.id.fl_download_book, R.id.fl_open_book, R.id.ll_book_detail_catalog);
         initDisplay();
 
     }
@@ -102,8 +98,8 @@ public class BookDetailActivity extends MvpLoaderActivity<BookDetailContract.Pre
         tvIsFinish.setText(book.isFinished() ?
                 getString(R.string.book_finished) : getString(R.string.book_unfinished));
         tvWordCount.setText(StringUtils.formatCount(book.getBookWordNum()) + "字");
-        tvWordCountCopyright.setText(tvWordCountCopyright.getText()+StringUtils.formatCount(book.getBookWordNum()) + "字");
-        tvCreateDateCopyright.setText(tvCreateDateCopyright.getText()+book.getCreateDateTime());
+        tvWordCountCopyright.setText(tvWordCountCopyright.getText() + StringUtils.formatCount(book.getBookWordNum()) + "字");
+        tvCreateDateCopyright.setText(tvCreateDateCopyright.getText() + book.getCreateDateTime());
         tvDescribe.setText(book.getDescribe());
 
 
@@ -207,7 +203,9 @@ public class BookDetailActivity extends MvpLoaderActivity<BookDetailContract.Pre
             tvUpdateTime.setText("已完结");
         } else {
             tvCatalogTitle.setText("最新章节：" + data.getLatestChapter().getChapterName());
-            long aLong = Long.parseLong(data.getLatestChapter().getCreateTime() + "000");
+            String time = data.getLatestChapter().getCreateTime();
+            time = time == null ? "" : time;
+            long aLong = DateUtil.timeToTimestamp(time.replace('T',' '));
             tvUpdateTime.setText(DateUtil.formatSomeAgo(aLong));
         }
     }
